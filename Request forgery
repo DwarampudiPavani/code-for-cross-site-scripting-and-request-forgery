@@ -1,0 +1,37 @@
+from flask import Flask, request, redirect, url_for, render_template_string
+from flask_wtf import FlaskForm
+from wtforms import IntegerField, SubmitField
+from wtforms.validators import DataRequired
+from flask_wtf.csrf import CSRFProtect
+
+app = Flask(_name_)
+app.secret_key = 'supersecretkey'  # Required for CSRF protection
+csrf = CSRFProtect(app)
+
+fake_db = {'balance': 1000}
+
+class TransferForm(FlaskForm):
+    amount = IntegerField('Amount to transfer', validators=[DataRequired()])
+    submit = SubmitField('Transfer')
+
+@app.route('/')
+def index():
+    return f"Current Balance: {fake_db['balance']}<br><a href='/transfer'>Transfer Money</a>"
+
+@app.route('/transfer', methods=['GET', 'POST'])
+def transfer():
+    form = TransferForm()
+    if form.validate_on_submit():
+        amount = form.amount.data
+        fake_db['balance'] -= amount
+        return redirect(url_for('index'))
+    return render_template_string('''
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {{ form.amount.label }} {{ form.amount(size=20) }}<br>
+        {{ form.submit() }}
+    </form>
+    ''', form=form)
+
+if _name_ == '_main_':
+    app.run(debug=True)
