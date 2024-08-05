@@ -1,0 +1,21 @@
+from flask import Flask, request, render_template_string, Markup
+
+app = Flask(_name_)
+
+@app.route('/')
+def index():
+    name = request.args.get('name', '')
+    # Mark the name as safe to prevent automatic escaping
+    name_safe = Markup(name)
+    template = '''
+    <html>
+        <head><title>XSS Example</title></head>
+        <body>
+            <h1>Hello, {{ name_safe }}</h1>
+        </body>
+    </html>
+    '''
+    return render_template_string(template, name_safe=name_safe)
+
+if _name_ == '_main_':
+    app.run(debug=True)
